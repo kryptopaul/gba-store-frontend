@@ -1,2 +1,2 @@
-# Polygon Hackaton Project - Frontend
+# Polygon Hackathon Project - Frontend
 
