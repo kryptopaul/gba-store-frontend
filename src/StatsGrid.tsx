@@ -44,7 +44,7 @@ const icons = {
 };
 
 interface StatsGridProps {
-  data: { title: string; icon: keyof typeof icons; value: string; diff: number, type: number }[];
+  data: { title: string; icon: keyof typeof icons; value: any; diff: number, type: number, usdPrice: any }[];
 }
 
 export function StatsGrid({ data }: StatsGridProps) {
@@ -55,6 +55,7 @@ export function StatsGrid({ data }: StatsGridProps) {
     switch (stat.type) {
         case 1:
             return (
+              <div key={"1"}>
                 <Paper withBorder p="md" radius="md" key={stat.title}>
                   <Group position="apart">
                     <Text size="xs" color="dimmed" className={classes.title}>
@@ -66,22 +67,24 @@ export function StatsGrid({ data }: StatsGridProps) {
                   <Group align="flex-end" spacing="xs" mt={25}>
                     <Text className={classes.value}>{stat.value}</Text>
                     <Text
-                      color={stat.diff > 0 ? 'teal' : 'red'}
+                      color='teal'
                       size="sm"
                       weight={500}
                       className={classes.diff}
                     >
-                      <span>{stat.diff}%</span>
-                      <DiffIcon size={16} stroke={1.5} />
+
+                      <DiffIcon size={20} stroke={1.5} style={{marginLeft: "-10px"}}/>
                     </Text>
                   </Group>
                   <Text size="xs" color="dimmed" mt={7.5}>
-                    {`We've sold ${stat.value} items in total. Thank you!`}
+                  {stat.value}
                   </Text>
                 </Paper>
-              );
+                </div>
+                );
         case 2:
             return (
+              <div key={"2"}>
                 <Paper withBorder p="md" radius="md" key={stat.title}>
                   <Group position="apart">
                     <Text size="xs" color="dimmed" className={classes.title}>
@@ -98,15 +101,15 @@ export function StatsGrid({ data }: StatsGridProps) {
                       weight={500}
                       className={classes.diff}
                     >
-                      <span>{stat.diff}%</span>
-                      <DiffIcon size={16} stroke={1.5} />
+                      <DiffIcon size={20} stroke={1.5} style={{marginLeft: "-10px"}}/>
                     </Text>
                   </Group>
           
                   <Text size="xs" color="dimmed" mt={7.5}>
-                    Approximately: $371.32
+                    {stat.usdPrice === "Loading..." ? "Loading..." : "Approximately: $" + stat.usdPrice}
                   </Text>
                 </Paper>
+                </div>
               );
         default:
             return null;

@@ -1,7 +1,7 @@
 
 import { Badge, Card, Center, Group, SimpleGrid } from '@mantine/core';
 import { Modal } from '@mantine/core';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@mantine/core';
 import { ethers } from "ethers";
 import { TextInput } from '@mantine/core';
@@ -11,15 +11,16 @@ import { Text } from '@mantine/core';
 import { Paper } from '@mantine/core';
 import { Image } from '@mantine/core';
 import { Grid } from '@mantine/core';
-import { CloseButton } from '@mantine/core';
 import { createStyles } from '@mantine/core';
 import { IconCheck, IconCloud, IconLeaf } from '@tabler/icons';
  
 
 function Shop() {
 
+  //Mumbai!
+  
 
-  const [opened, setOpened] = useState(true);
+  const [opened, setOpened] = useState(false);
   const [loggedin, setLoggedin] = useState({state: false, address: ''});
   const [selectedItem, setSelectedItem] = useState({item: '', image: '', price: 0});
 
@@ -64,17 +65,13 @@ function Shop() {
       color: theme.colorScheme === 'dark' ? theme.colors.dark[2] : theme.colors.gray[5],
     },
   }));
-  
-  const mockdata = [
-    { label: 'Ethically sourced', icon: IconLeaf },
-    { label: '100% cotton', icon: IconCloud },
-    { label: 'Support UoG through your purchase', icon: IconCheck },
-  ];
+
   
   interface Item {
     item: string;
     image: string;
     price: number;
+    features: Array<{label: string, icon: any}>;
   }
   
   
@@ -83,7 +80,7 @@ function Shop() {
   
   
     const { classes } = useStyles();
-    const features = mockdata.map((feature) => (
+    const features = props.features.map((feature) => (
       <Center key={feature.label}>
         <feature.icon size={18} className={classes.icon} stroke={1.5} />
         <Text size="xs">{feature.label}</Text>
@@ -126,7 +123,7 @@ function Shop() {
               </Text>
             </div>
   
-            <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price}) ,setOpened(true)]}>
+            <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price}), setOpened(true)]}>
               Buy now
             </Button>
           </Group>
@@ -142,17 +139,14 @@ function Shop() {
 
       <Paper shadow="xs" p="sm" withBorder={true} style={{marginBottom: "10px"}}>
         <Grid align="center">
-          <Grid.Col span={3}>
+          <Grid.Col span={4}>
             <Image src={selectedItem.image} radius={"md"} height={"75px"} width={"75px"} />
           </Grid.Col>
-          <Grid.Col span={3}>
+          <Grid.Col span={4}>
             <Text weight={500}>{selectedItem.item}</Text>
           </Grid.Col>
-          <Grid.Col span={3}>
+          <Grid.Col span={4}>
             <Text>£{selectedItem.price}</Text>
-          </Grid.Col>
-          <Grid.Col span={3}>
-            <CloseButton/>
           </Grid.Col>
         </Grid>
       </Paper>
@@ -184,6 +178,14 @@ function Shop() {
     }
   }
 
+  const transact = async (amount:number) => {
+    try{
+      console.log("transacting amount: " + amount);
+    } catch(e) {
+      console.log(e)
+    }
+  }
+
   const loginForm = () => {
     return (
 
@@ -210,8 +212,10 @@ function Shop() {
       required
       style={{marginTop: '10px'}}
     />
-      <Button type="submit" mt="sm">
-        Submit
+    <h2>Total: £{selectedItem.price}</h2>
+    <h3 style={{marginTop: "-15px"}}>Includes a donation of: £{(selectedItem.price * 0.15).toFixed(2)}</h3>
+      <Button type="submit" mt="sm" style={{marginTop: "-5px"}} onClick={() => transact(selectedItem.price)}>
+        Purchase
       </Button>
     </form>
     </>
@@ -238,7 +242,8 @@ function Shop() {
       <Modal
         opened={opened}
         onClose={() => setOpened(false)}
-        title="Your order"
+        title={loggedin.state ? "Your order": "Login"}
+        closeOnClickOutside={false}
       >
       {loggedin.state ? orderForm() : loginForm()}
       </Modal>
@@ -252,9 +257,21 @@ function Shop() {
           { maxWidth: 'xs', cols: 1 },
         ]}
       >
-                <ItemCard {...{item: "I <3 GRE T-shirt", image: "https://i.imgur.com/63lfPtX.png", price: 29.99}}/>
-                <ItemCard {...{item: "GBA Mug", image: "https://i.imgur.com/MnqsHWp.png", price: 14.99}}/>
-                <ItemCard {...{item: "GBA Mousepad", image: "https://i.imgur.com/6aJ2YwY.png", price: 7.99}}/>
+                <ItemCard {...{item: "I <3 GRE T-shirt", image: "https://i.imgur.com/63lfPtX.png", price: 29.99, features: [
+    { label: 'Ethically sourced', icon: IconLeaf },
+    { label: '100% cotton', icon: IconCloud },
+    { label: 'Support UoG through your purchase', icon: IconCheck },
+  ]}}/>
+                <ItemCard {...{item: "GBA Mug", image: "https://i.imgur.com/MnqsHWp.png", price: 14.99, features: [
+    { label: 'Ethically sourced', icon: IconLeaf },
+    { label: '100% cotton', icon: IconCloud },
+    { label: 'Support UoG through your purchase', icon: IconCheck },
+  ]}}/>
+                <ItemCard {...{item: "GBA Mousepad", image: "https://i.imgur.com/6aJ2YwY.png", price: 7.99, features: [
+    { label: 'Ethically sourced', icon: IconLeaf },
+    { label: '100% cotton', icon: IconCloud },
+    { label: 'Support UoG through your purchase', icon: IconCheck },
+  ]}}/>
         </SimpleGrid>
     </div>
   );
