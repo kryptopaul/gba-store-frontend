@@ -7,6 +7,7 @@ import {
   IconArrowUpRight,
   IconArrowDownRight,
 } from '@tabler/icons';
+import { Loader } from '@mantine/core';
 
 const useStyles = createStyles((theme) => ({
   root: {
@@ -65,7 +66,7 @@ export function StatsGrid({ data }: StatsGridProps) {
                   </Group>
           
                   <Group align="flex-end" spacing="xs" mt={25}>
-                    <Text className={classes.value}>{stat.value}</Text>
+                    <Text className={classes.value}>{stat.value === "Loading..." ? <Loader/> : stat.value}</Text>
                     <Text
                       color='teal'
                       size="sm"
@@ -77,7 +78,7 @@ export function StatsGrid({ data }: StatsGridProps) {
                     </Text>
                   </Group>
                   <Text size="xs" color="dimmed" mt={7.5}>
-                  {stat.value}
+                  {stat.value === "Loading..." ? "Loading..." : `We've sold ${stat.value} items in total. Thank you!`}
                   </Text>
                 </Paper>
                 </div>
@@ -94,7 +95,7 @@ export function StatsGrid({ data }: StatsGridProps) {
                   </Group>
           
                   <Group align="flex-end" spacing="xs" mt={25}>
-                    <Text className={classes.value}>{stat.value}</Text>
+                    <Text className={classes.value}>{stat.value === "Loading... MATIC" ? <Loader/> : stat.value}</Text>
                     <Text
                       color={stat.diff > 0 ? 'teal' : 'red'}
                       size="sm"
