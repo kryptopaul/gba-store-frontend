@@ -12,22 +12,40 @@ import { Paper } from '@mantine/core';
 import { Image } from '@mantine/core';
 import { Grid } from '@mantine/core';
 import { createStyles } from '@mantine/core';
+import { Select } from '@mantine/core';
 import { IconCheck, IconCloud, IconLeaf } from '@tabler/icons';
+import { Alert } from '@mantine/core';
+import { IconAlertCircle } from '@tabler/icons';
  
 
 function Shop() {
 
   //Mumbai!
-  
+  const [error, setError] = useState({isError: false, code: 0, cssTag: "none"});
+
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
 
   const [opened, setOpened] = useState(false);
   const [loggedin, setLoggedin] = useState({state: false, address: ''});
-  const [selectedItem, setSelectedItem] = useState({item: '', image: '', price: 0});
+
+  const [orderSuccess , setOrderSuccess] = useState({state: false, orderID: ''});
+
+  interface SelectedItem {
+    item: string
+    image: string
+    price: number
+    size: string | null
+  }
+
+  const [selectedItem, setSelectedItem] = useState<SelectedItem>({item: '', image: '', price: 0, size: null});
 
 
-  const [userProvider, setUserProvider] = useState({});
   const [userSigner, setSigner] = useState({});
-  const [address , setAddress] = useState('');
+
+  const contractAddress = "0xdB2e1afF5Db2F4D32FD25a9d421C923cECCF91f7"
+  const contractAbi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"charityAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"gbaAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"itemsSold","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"percentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"purchase","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"totalDonated","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
 
   const useStyles = createStyles((theme) => ({
     card: {
@@ -72,12 +90,14 @@ function Shop() {
     image: string;
     price: number;
     features: Array<{label: string, icon: any}>;
+    hasSize: boolean;
+    color: string;
   }
   
   
   function ItemCard(props:Item) {
   
-  
+    const [selectedSize, setSelectedSize] = useState<string | null>('S');
   
     const { classes } = useStyles();
     const features = props.features.map((feature) => (
@@ -93,6 +113,7 @@ function Shop() {
       <Card withBorder radius="md" className={classes.card}>
         <Card.Section className={classes.imageSection}>
           <Image src={props.image} alt="Greenwich Tshirt" />
+          
         </Card.Section>
   
         <Group position="apart" mt="md">
@@ -113,6 +134,43 @@ function Shop() {
           <Group spacing={8} mb={-8}>
             {features}
           </Group>
+
+
+          {
+
+          props.hasSize 
+
+          ? 
+
+          <Select
+      style={{marginTop: '15px'}}
+      label="Size"
+      placeholder="Pick one"
+      data={[
+        { value: 'S', label: 'S' },
+        { value: 'M', label: 'M' },
+        { value: 'L', label: 'L' },
+        { value: 'XL', label: 'XL' },
+      ]}
+      defaultValue={selectedSize}
+      value={selectedSize}
+      onChange={(value) => [console.log(value), setSelectedSize(value)]}
+    /> 
+
+    : 
+
+        <Select disabled
+      style={{marginTop: '15px'}}
+      label="Colour"
+      placeholder="Pick one"
+      data={[
+        { value: props.color, label: props.color }
+      ]}
+      defaultValue={props.color}
+    />}
+    
+
+
         </Card.Section>
   
         <Card.Section className={classes.section}>
@@ -123,9 +181,13 @@ function Shop() {
               </Text>
             </div>
   
-            <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price}), setOpened(true)]}>
+            {props.hasSize ? <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price, size: selectedSize}), setOpened(true)]}>
               Buy now
-            </Button>
+            </Button> : <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price, size: null}), setOpened(true)]}>
+              Buy now
+            </Button>}
+
+
           </Group>
         </Card.Section>
       </Card>
@@ -134,25 +196,49 @@ function Shop() {
     );
   }
 
+  // Different grid depending if it needs a size (tshirt) or not (mug, mousepad).
   const CartItem = () => {
+
+    if (selectedItem.size){
+
     return (
 
+      <div>
       <Paper shadow="xs" p="sm" withBorder={true} style={{marginBottom: "10px"}}>
         <Grid align="center">
-          <Grid.Col span={4}>
+          <Grid.Col span={3}>
             <Image src={selectedItem.image} radius={"md"} height={"75px"} width={"75px"} />
           </Grid.Col>
-          <Grid.Col span={4}>
+          <Grid.Col span={3}>
             <Text weight={500}>{selectedItem.item}</Text>
           </Grid.Col>
-          <Grid.Col span={4}>
+          <Grid.Col span={3}>
             <Text>£{selectedItem.price}</Text>
+          </Grid.Col>
+          <Grid.Col span={3}>
+            <Text>Size: {selectedItem.size}</Text>
           </Grid.Col>
         </Grid>
       </Paper>
-
-
-    )
+      </div>
+    )} else {
+      return(      
+      <div>
+        <Paper shadow="xs" p="sm" withBorder={true} style={{marginBottom: "10px"}}>
+          <Grid align="center">
+            <Grid.Col span={4}>
+              <Image src={selectedItem.image} radius={"md"} height={"75px"} width={"75px"} />
+            </Grid.Col>
+            <Grid.Col span={4}>
+              <Text weight={500}>{selectedItem.item}</Text>
+            </Grid.Col>
+            <Grid.Col span={4}>
+              <Text>£{selectedItem.price}</Text>
+            </Grid.Col>
+          </Grid>
+        </Paper>
+        </div>)
+    }
   }
 
   const connectWallet = async () => {
@@ -162,10 +248,8 @@ function Shop() {
       const userSigner = userProvider.getSigner();
       const address = await userSigner.getAddress();
 
-      setUserProvider(userProvider);
       setSigner(userSigner);
 
-      setAddress(address);
       setLoggedin({state: true, address: address});
 
       console.log(address);
@@ -178,11 +262,61 @@ function Shop() {
     }
   }
 
-  const transact = async (amount:number) => {
+  //order
+  //change amount to order item and references
+  // Name and Email can be taken from the state
+  const transact = async () => {
     try{
-      console.log("transacting amount: " + amount);
-    } catch(e) {
+      //Purchasing item, size console log
+
+
+      // Fetch MATIC/GBP price from Coingecko API
+
+      const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=matic-network&vs_currencies=gbp');
+      const data = await response.json();
+      const maticGBPprice = data["matic-network"]["gbp"];
+
+      const maticAmountToPay = selectedItem.price * maticGBPprice;
+      console.log("Paying: " + maticAmountToPay + " MATIC");
+      
+
+      console.log("transacting amount: " + selectedItem.price + " GBP");
+      const contract = new ethers.Contract(contractAddress, contractAbi, (userSigner as any));
+      const tx = await contract.purchase({value: ethers.utils.parseEther(maticAmountToPay.toString())});
+      console.log("transaction complete, txid is: " + tx.hash);
+
+      //Once the transaction is complete, send the order to Azure Logic App to generate the order ID and send an email to the customer
+
+      //Prepare the payload to send to Azure Logic App
+      const orderPayload = {
+        name: name,
+        email: email,
+        item: selectedItem.item,
+        size: selectedItem.size ? selectedItem.size : "N/A",
+        txid: tx.hash,
+
+      }
+
+      console.log(orderPayload);
+
+      //The part with the Azure Logic App Request
+
+      const azureEndpoint = 'https://prod-11.centralus.logic.azure.com:443/workflows/fafde01aa0f546ed82d75aa9a307279e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ILnQdt-4tsIPZ1M4WLJlfzlFxrmVnQ1pFg4GuOjG60s';
+
+
+      const azureRequest = await fetch(azureEndpoint, {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(orderPayload)});
+
+      const azureResponse = await azureRequest.json();
+
+      const orderID = azureResponse["order_id"];
+      console.log("Success!: " + orderID);
+
+      setOrderSuccess({state: true, orderID: orderID});
+
+
+    } catch(e:any) {
       console.log(e)
+      setError({isError: true, code: e.code, cssTag: "flex"})
     }
   }
 
@@ -196,14 +330,25 @@ function Shop() {
     )
   }
 
-
-  const orderForm = () => {
+  const successForm = () => {
     return (
       <>
+      <h2>Order Successful!</h2>
+      <h3>Order ID: {orderSuccess.orderID}</h3>
+      </>)
+  }
+
+  const orderForm = () => {
+    
+    return (
+
+      <>
       <CartItem/>
-      <form onSubmit={form.onSubmit(console.log)}>
-      <TextInput required label="Name" placeholder="Name" {...form.getInputProps('name')} />
-      <TextInput required mt="sm" label="Email" placeholder="Email" {...form.getInputProps('email')} />
+      <form onSubmit={(e) => [e.preventDefault(), transact(), console.log(name), console.log(email)]}>
+
+      <TextInput required label="Name" placeholder="Name" onInput={(e) => setName((e.target as HTMLInputElement).value)} {...form.getInputProps('name')} />
+
+      <TextInput required mt="sm" label="Email" placeholder="Email" onInput={(e) => setEmail((e.target as HTMLInputElement).value)} {...form.getInputProps('email')} />
       <NativeSelect
       data={['Greenwich Campus']}
       label="Pickup Location"
@@ -214,9 +359,13 @@ function Shop() {
     />
     <h2>Total: £{selectedItem.price}</h2>
     <h3 style={{marginTop: "-15px"}}>Includes a donation of: £{(selectedItem.price * 0.15).toFixed(2)}</h3>
-      <Button type="submit" mt="sm" style={{marginTop: "-5px"}} onClick={() => transact(selectedItem.price)}>
+      <Button type="submit" mt="sm" style={{marginTop: "-5px"}}>
         Purchase
       </Button>
+
+      <Alert style={{marginTop: "15px", display: error.cssTag}} icon={<IconAlertCircle size={16} />} title="Error!" color="red">
+      {error.code === -32603 ? "Insufficient funds." : "unknown error"}
+    </Alert>
     </form>
     </>
     )
@@ -241,11 +390,11 @@ function Shop() {
     <>
       <Modal
         opened={opened}
-        onClose={() => setOpened(false)}
+        onClose={() => [setOpened(false), setOrderSuccess({state: false, orderID: ''}), setError({isError: false, code: 0, cssTag: "none"})]}
         title={loggedin.state ? "Your order": "Login"}
         closeOnClickOutside={false}
       >
-      {loggedin.state ? orderForm() : loginForm()}
+      {loggedin.state ? (orderSuccess.state ? successForm() : orderForm()) : loginForm()}
       </Modal>
 
     </>
@@ -261,17 +410,17 @@ function Shop() {
     { label: 'Ethically sourced', icon: IconLeaf },
     { label: '100% cotton', icon: IconCloud },
     { label: 'Support UoG through your purchase', icon: IconCheck },
-  ]}}/>
+  ], hasSize: true, color: "Black"}}/>
                 <ItemCard {...{item: "GBA Mug", image: "https://i.imgur.com/MnqsHWp.png", price: 14.99, features: [
     { label: 'Ethically sourced', icon: IconLeaf },
     { label: '100% cotton', icon: IconCloud },
     { label: 'Support UoG through your purchase', icon: IconCheck },
-  ]}}/>
+  ], hasSize: false, color: "White"}}/>
                 <ItemCard {...{item: "GBA Mousepad", image: "https://i.imgur.com/6aJ2YwY.png", price: 7.99, features: [
     { label: 'Ethically sourced', icon: IconLeaf },
     { label: '100% cotton', icon: IconCloud },
     { label: 'Support UoG through your purchase', icon: IconCheck },
-  ]}}/>
+  ], hasSize: false, color: "Black"}}/>
         </SimpleGrid>
     </div>
   );

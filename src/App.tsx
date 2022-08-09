@@ -11,8 +11,8 @@ import { useEffect, useState } from 'react';
 const headerLinks = [{link: 'https://google.com', label: 'Home'}, {link: 'https://google.com', label: 'FAQ'}, {link: 'https://google.com', label: 'Contact'}];
 const footerLinks = [{title: 'Dupa', links: [{label: 'Link1', link: 'https://google.com'}]}]
 
-const alchemyEndpoint = "https://polygon-mumbai.g.alchemy.com/v2/Us5Q5NYXkHhKPrpit0cJ2yaf4lKjwV4i" 
-const contractAddress = "0xec9deb5812b583c54c473f7097a81bb755759e4c"
+const alchemyEndpoint = "HTTP://127.0.0.1:8545" 
+const contractAddress = "0xdB2e1afF5Db2F4D32FD25a9d421C923cECCF91f7"
 const contractAbi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"charityAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"gbaAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"itemsSold","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"percentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"purchase","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"totalDonated","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
 const publicProvider = new ethers.providers.JsonRpcProvider(alchemyEndpoint);
 const fetchContract = new ethers.Contract(contractAddress, contractAbi, publicProvider);
