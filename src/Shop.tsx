@@ -13,7 +13,7 @@ import { Image } from '@mantine/core';
 import { Grid } from '@mantine/core';
 import { createStyles } from '@mantine/core';
 import { Select } from '@mantine/core';
-import { IconCheck, IconCloud, IconLeaf } from '@tabler/icons';
+import { IconCheck, IconCloud, IconLeaf, IconMug, IconCoffee, IconMouse, IconDeviceGamepad2 } from '@tabler/icons';
 import { Alert } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons';
  
@@ -21,16 +21,17 @@ import { IconAlertCircle } from '@tabler/icons';
 function Shop() {
 
   //Mumbai!
+  const [isModalOpened, setModalOpened] = useState(false);
+  const [isOrderButtonLoading, setOrderButtonLoading] = useState(false);
   const [error, setError] = useState({isError: false, code: 0, cssTag: "none"});
 
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
-  const [opened, setOpened] = useState(false);
   const [loggedin, setLoggedin] = useState({state: false, address: ''});
 
-  const [orderSuccess , setOrderSuccess] = useState({state: false, orderID: ''});
+  const [orderSuccess , setOrderSuccess] = useState({state: false, orderID: '', orderEmail: ''});
 
   interface SelectedItem {
     item: string
@@ -44,7 +45,7 @@ function Shop() {
 
   const [userSigner, setSigner] = useState({});
 
-  const contractAddress = "0xdB2e1afF5Db2F4D32FD25a9d421C923cECCF91f7"
+  const contractAddress = "0xb933C15C9137A22dc70cBd6c263D7daA870D7f9C"
   const contractAbi = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[],"name":"charityAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"gbaAddress","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"itemsSold","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"percentage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"purchase","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"totalDonated","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
 
   const useStyles = createStyles((theme) => ({
@@ -120,7 +121,7 @@ function Shop() {
           <div style={{textAlign: 'left'}}>
             <Text weight={500}>{props.item}</Text>
             <Text size="xs" color="dimmed">
-              Exclusive to Greenwich students
+              Available
             </Text>
           </div>
           <Badge variant="outline">25% off</Badge>
@@ -181,9 +182,9 @@ function Shop() {
               </Text>
             </div>
   
-            {props.hasSize ? <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price, size: selectedSize}), setOpened(true)]}>
+            {props.hasSize ? <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price, size: selectedSize}), setModalOpened(true)]}>
               Buy now
-            </Button> : <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price, size: null}), setOpened(true)]}>
+            </Button> : <Button radius="xl" style={{ flex: 1 }} onClick={() => [setSelectedItem({item: props.item, image: props.image, price: props.price, size: null}), setModalOpened(true)]}>
               Buy now
             </Button>}
 
@@ -276,7 +277,7 @@ function Shop() {
       const data = await response.json();
       const maticGBPprice = data["matic-network"]["gbp"];
 
-      const maticAmountToPay = selectedItem.price * maticGBPprice;
+      const maticAmountToPay = selectedItem.price / maticGBPprice;
       console.log("Paying: " + maticAmountToPay + " MATIC");
       
 
@@ -311,12 +312,13 @@ function Shop() {
       const orderID = azureResponse["order_id"];
       console.log("Success!: " + orderID);
 
-      setOrderSuccess({state: true, orderID: orderID});
+      setOrderSuccess({state: true, orderID: orderID, orderEmail: orderPayload.email});
 
 
     } catch(e:any) {
       console.log(e)
       setError({isError: true, code: e.code, cssTag: "flex"})
+      setOrderButtonLoading(false);
     }
   }
 
@@ -333,8 +335,12 @@ function Shop() {
   const successForm = () => {
     return (
       <>
-      <h2>Order Successful!</h2>
-      <h3>Order ID: {orderSuccess.orderID}</h3>
+      <h2>✔️ Order Successful!</h2>
+      <p>Your Order ID is {orderSuccess.orderID}</p>
+      <p>The pick-up information has been sent to {orderSuccess.orderEmail}</p>
+      <Button color="red" onClick={() => [setModalOpened(false), setOrderSuccess({state: false, orderID: '', orderEmail: ''}), setError({isError: false, code: 0, cssTag: "none"})]}>
+      Close
+    </Button>
       </>)
   }
 
@@ -344,7 +350,7 @@ function Shop() {
 
       <>
       <CartItem/>
-      <form onSubmit={(e) => [e.preventDefault(), transact(), console.log(name), console.log(email)]}>
+      <form onSubmit={(e) => [e.preventDefault(), transact(), console.log(name), console.log(email), setOrderButtonLoading(true)]}>
 
       <TextInput required label="Name" placeholder="Name" onInput={(e) => setName((e.target as HTMLInputElement).value)} {...form.getInputProps('name')} />
 
@@ -359,8 +365,8 @@ function Shop() {
     />
     <h2>Total: £{selectedItem.price}</h2>
     <h3 style={{marginTop: "-15px"}}>Includes a donation of: £{(selectedItem.price * 0.15).toFixed(2)}</h3>
-      <Button type="submit" mt="sm" style={{marginTop: "-5px"}}>
-        Purchase
+      <Button loading={isOrderButtonLoading} type="submit" mt="sm" style={{marginTop: "-5px"}}>
+        Pay with MATIC
       </Button>
 
       <Alert style={{marginTop: "15px", display: error.cssTag}} icon={<IconAlertCircle size={16} />} title="Error!" color="red">
@@ -386,11 +392,12 @@ function Shop() {
 
   return (
 <div className="Shop">
+  
 {/*Order Form*/}
     <>
       <Modal
-        opened={opened}
-        onClose={() => [setOpened(false), setOrderSuccess({state: false, orderID: ''}), setError({isError: false, code: 0, cssTag: "none"})]}
+        opened={isModalOpened}
+        onClose={() => [setModalOpened(false), setOrderSuccess({state: false, orderID: '', orderEmail: ''}), setError({isError: false, code: 0, cssTag: "none"})]}
         title={loggedin.state ? "Your order": "Login"}
         closeOnClickOutside={false}
       >
@@ -409,17 +416,17 @@ function Shop() {
                 <ItemCard {...{item: "I <3 GRE T-shirt", image: "https://i.imgur.com/63lfPtX.png", price: 29.99, features: [
     { label: 'Ethically sourced', icon: IconLeaf },
     { label: '100% cotton', icon: IconCloud },
-    { label: 'Support UoG through your purchase', icon: IconCheck },
+    { label: 'Donate through your purchase', icon: IconCheck },
   ], hasSize: true, color: "Black"}}/>
                 <ItemCard {...{item: "GBA Mug", image: "https://i.imgur.com/MnqsHWp.png", price: 14.99, features: [
-    { label: 'Ethically sourced', icon: IconLeaf },
-    { label: '100% cotton', icon: IconCloud },
-    { label: 'Support UoG through your purchase', icon: IconCheck },
+    { label: 'Porcelain Mug', icon: IconMug },
+    { label: "For Coffee and Tea", icon: IconCoffee },
+    { label: 'Donate through your purchase', icon: IconCheck },
   ], hasSize: false, color: "White"}}/>
                 <ItemCard {...{item: "GBA Mousepad", image: "https://i.imgur.com/6aJ2YwY.png", price: 7.99, features: [
-    { label: 'Ethically sourced', icon: IconLeaf },
-    { label: '100% cotton', icon: IconCloud },
-    { label: 'Support UoG through your purchase', icon: IconCheck },
+    { label: '100% Accuracy', icon: IconDeviceGamepad2 },
+    { label: 'Premium Mousepad', icon: IconMouse },
+    { label: 'Donate through your purchase', icon: IconCheck },
   ], hasSize: false, color: "Black"}}/>
         </SimpleGrid>
     </div>
