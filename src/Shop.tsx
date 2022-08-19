@@ -245,6 +245,10 @@ function Shop() {
   const connectWallet = async () => {
     try{
       const userProvider = new ethers.providers.Web3Provider(window.ethereum);
+      // Set the network to MATIC Mumbai
+      let web3 = window.ethereum;
+      await web3.request({method: "wallet_switchEthereumChain", params: [{chainId:"0x13881"}]});
+
       await userProvider.send('eth_requestAccounts', []);
       const userSigner = userProvider.getSigner();
       const address = await userSigner.getAddress();
